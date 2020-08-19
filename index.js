@@ -1,6 +1,7 @@
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const { promisify } = require('util');
 
 const {
   zip,
@@ -13,12 +14,8 @@ const {
 } = require('./utils/lib.js');
 const customFilterOperation = require('./app/appLogic');
 
-// Write to file synchronously
-const writeFileSync = (filePath, data) => {
-  fs.writeFileSync(filePath, data);
-};
-
-const genFile = partial(writeFileSync, path.join(__dirname, './data.json'));
+// Write to file
+const writeFile = promisify(fs.writeFile);
 
 const options = {
   host: 'coderbyte.com',
@@ -51,7 +48,10 @@ const callback = response => {
     const filteredObject = pipe(zip, fromEntries)(validKeys, finalFilter);
 
     // Write to file
-    genFile(JSON.stringify(filteredObject));
+    writeFile(
+      path.join(__dirname, './data.json'),
+      JSON.stringify(filteredObject)
+    ).catch(console.error);
   });
 };
 
