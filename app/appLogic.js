@@ -21,8 +21,8 @@ const mapItemsIntoArrays = lib.partial(
   lib.ifElse(lib.isObject, lib.entries, unlessIsArray)
 );
 
-// Second filter logic
-const secondFilter = lib.partial(
+//  filter logic
+const filterLogicOne = lib.partial(
   lib.map,
   lib.unless(
     lenIs1,
@@ -32,8 +32,8 @@ const secondFilter = lib.partial(
   )
 );
 
-// Third filter logic
-const thirdFilter = lib.partial(
+//  filter logic
+const filterLogicTwo = lib.partial(
   lib.map,
   lib.when(
     isArrayOfPairs,
@@ -51,8 +51,8 @@ const thirdFilter = lib.partial(
   )
 );
 
-// Fourth filter logic
-const fourthFilter = lib.partial(
+//  filter logic
+const filterLogicThree = lib.partial(
   lib.map,
   lib.ifElse(isArrayOfPairs, lib.fromEntries, valueOfLenOneArr)
 );
@@ -60,9 +60,9 @@ const fourthFilter = lib.partial(
 // Filter compose function
 const filterOperation = lib.pipe(
   mapItemsIntoArrays,
-  secondFilter,
-  thirdFilter,
-  fourthFilter
+  filterLogicOne,
+  filterLogicTwo,
+  filterLogicThree
 );
 
 module.exports = filterOperation;
