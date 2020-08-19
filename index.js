@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const lib = require('./utils/lib.js');
+const { pipe } = require('./utils/lib.js');
 
 // Predicates
 const isArrayOfPairs = lib.pipe(
@@ -18,6 +19,56 @@ const valueOfLenOneArr = lib.when(
 );
 
 const unlessIsArray = lib.unless(Array.isArray, lib.of);
+
+// Map object values into array for consistent operations across items
+const mapItemsIntoArrays = lib.partial(
+  lib.map,
+  lib.ifElse(lib.isObject, lib.entries, unlessIsArray)
+);
+
+// Second filter logic
+const secondFilter = lib.partial(
+  lib.map,
+  lib.unless(
+    lenIs1,
+    lib.partial(lib.filter, i =>
+      lib.complement(lib.includes)(i, ['', 'N/A', '-'])
+    )
+  )
+);
+
+// Third filter logic
+const thirdFilter = lib.partial(
+  lib.map,
+  lib.when(
+    isArrayOfPairs,
+    lib.partial(
+      lib.filter,
+      lib.pipe(
+        lib.partial(lib.nth, 1),
+        lib.partial(lib.flip(lib.complement(lib.includes)), [
+          '',
+          'N/A',
+          '-',
+        ])
+      )
+    )
+  )
+);
+
+// Fourth filter logic
+const fourthFilter = lib.partial(
+  lib.map,
+  lib.ifElse(isArrayOfPairs, lib.fromEntries, valueOfLenOneArr)
+);
+
+// Filter compose function
+const filterUnsortedValues = lib.pipe(
+  mapItemsIntoArrays,
+  secondFilter,
+  thirdFilter,
+  fourthFilter
+);
 
 // Write to file synchronously
 const writeFileSync = (filePath, data) => {
@@ -52,48 +103,6 @@ const callback = response => {
 
     // Extract object values
     const unsortedValues = lib.values(firstFilter);
-
-    // Map object values into array for consistent operations across items
-    const mapItemsIntoArrays = lib.partial(
-      lib.map,
-      lib.ifElse(lib.isObject, lib.entries, unlessIsArray)
-    );
-
-    // Second filter logic
-    const secondFilter = lib.partial(
-      lib.map,
-      lib.unless(
-        lenIs1,
-        lib.partial(lib.filter, i =>
-          lib.complement(lib.includes)(i, ['', 'N/A', '-'])
-        )
-      )
-    );
-
-    // Third filter logic
-    const thirdFilter = lib.partial(
-      lib.map,
-      lib.when(
-        isArrayOfPairs,
-        lib.partial(lib.filter, ([key, val]) =>
-          lib.complement(lib.includes)(val, ['', 'N/A', '-'])
-        )
-      )
-    );
-
-    // Fourth filter logic
-    const fourthFilter = lib.partial(
-      lib.map,
-      lib.ifElse(isArrayOfPairs, lib.fromEntries, valueOfLenOneArr)
-    );
-
-    // Filter compose function
-    const filterUnsortedValues = lib.pipe(
-      mapItemsIntoArrays,
-      secondFilter,
-      thirdFilter,
-      fourthFilter
-    );
 
     // Filter operation
     const finalFilter = filterUnsortedValues(unsortedValues);
