@@ -14,7 +14,7 @@ const {
 } = require('./utils/lib.js');
 const customFilterOperation = require('./app/appLogic');
 
-// Write to file
+// Promisify Write to file method
 const writeFile = promisify(fs.writeFile);
 
 const options = {
