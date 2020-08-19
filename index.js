@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const lib = require('./utils/lib.js');
-const filterOperation = require('./app/appLogic');
+const customFilterOperation = require('./app/appLogic');
 
 // Write to file synchronously
 const writeFileSync = (filePath, data) => {
@@ -30,17 +30,17 @@ const callback = response => {
   response.on('end', () => {
     const data = lib.pipe(Buffer.concat, String, JSON.parse)(body);
 
-    //First filter logic
-    const firstFilter = lib.omit(data, ['', 'N/A', '-']);
+    //First filter
+    const initFilter = lib.omit(data, ['', 'N/A', '-']);
 
     // Extract valid keys
-    const validKeys = lib.keys(firstFilter);
+    const validKeys = lib.keys(initFilter);
 
     // Extract object values
-    const unsortedValues = lib.values(firstFilter);
+    const unsortedValues = lib.values(initFilter);
 
     // Filter operation
-    const finalFilter = filterOperation(unsortedValues);
+    const finalFilter = customFilterOperation(unsortedValues);
 
     // Zip valid keys with filtered values and make into object
     const filteredObject = lib.pipe(lib.zip, lib.fromEntries)(

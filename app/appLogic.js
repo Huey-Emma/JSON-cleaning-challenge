@@ -1,5 +1,7 @@
 const lib = require('./../utils/lib');
 
+const charsToRemove = ['', 'N/A', '-'];
+
 // Predicates
 const isArrayOfPairs = lib.pipe(
   lib.partial(lib.nth, 0),
@@ -26,8 +28,14 @@ const filterLogicOne = lib.partial(
   lib.map,
   lib.unless(
     lenIs1,
-    lib.partial(lib.filter, i =>
-      lib.complement(lib.includes)(i, ['', 'N/A', '-'])
+    lib.partial(
+      lib.filter,
+      lib.pipe(
+        lib.partial(
+          lib.flip(lib.complement(lib.includes)),
+          charsToRemove
+        )
+      )
     )
   )
 );
@@ -41,11 +49,10 @@ const filterLogicTwo = lib.partial(
       lib.filter,
       lib.pipe(
         lib.partial(lib.nth, 1),
-        lib.partial(lib.flip(lib.complement(lib.includes)), [
-          '',
-          'N/A',
-          '-',
-        ])
+        lib.partial(
+          lib.flip(lib.complement(lib.includes)),
+          charsToRemove
+        )
       )
     )
   )
@@ -58,11 +65,11 @@ const filterLogicThree = lib.partial(
 );
 
 // Filter compose function
-const filterOperation = lib.pipe(
+const customFilterOperation = lib.pipe(
   mapItemsIntoArrays,
   filterLogicOne,
   filterLogicTwo,
   filterLogicThree
 );
 
-module.exports = filterOperation;
+module.exports = customFilterOperation;
