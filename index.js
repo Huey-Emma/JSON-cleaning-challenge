@@ -34,7 +34,7 @@ const options = {
   path: '/api/challenges/json/json-cleaning',
 };
 
-let callback = function (response) {
+let callback = response => {
   let body = [];
 
   response.on('data', function (chunk) {
