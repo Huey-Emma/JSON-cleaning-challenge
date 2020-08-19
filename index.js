@@ -34,15 +34,15 @@ const options = {
   path: '/api/challenges/json/json-cleaning',
 };
 
-let callback = response => {
-  let body = [];
+const callback = response => {
+  const body = [];
 
-  response.on('data', function (chunk) {
+  response.on('data', chunk => {
     body.push(chunk);
   });
 
-  response.on('end', function () {
-    let data = lib.pipe(Buffer.concat, String, JSON.parse)(body);
+  response.on('end', () => {
+    const data = lib.pipe(Buffer.concat, String, JSON.parse)(body);
 
     //First filter logic
     const firstFilter = lib.omit(data, ['', 'N/A', '-']);
