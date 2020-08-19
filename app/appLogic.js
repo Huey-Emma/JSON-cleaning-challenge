@@ -1,71 +1,69 @@
-const lib = require('./../utils/lib');
+const {
+  map,
+  complement,
+  filter,
+  includes,
+  flip,
+  nth,
+  len,
+  eq,
+  entries,
+  of,
+  fromEntries,
+  pipe,
+  partial,
+  isObject,
+  ifElse,
+  when,
+  unless,
+} = require('./../utils/lib');
 
 const charsToRemove = ['', 'N/A', '-'];
 
 // Predicates
-const isArrayOfPairs = lib.pipe(
-  lib.partial(lib.nth, 0),
-  Array.isArray
-);
+const isArrayOfPairs = pipe(partial(nth, 0), Array.isArray);
 
-const lenIs1 = lib.pipe(lib.len, lib.partial(lib.eq, 1));
+const lenIs1 = pipe(len, partial(eq, 1));
 
-const valueOfLenOneArr = lib.when(
-  lib.pipe(lib.len, lib.partial(lib.eq, 1)),
-  lib.partial(lib.nth, 0)
-);
+const valueOfLenOneArr = when(pipe(len, partial(eq, 1)), partial(nth, 0));
 
-const unlessIsArray = lib.unless(Array.isArray, lib.of);
+const unlessIsArray = unless(Array.isArray, of);
 
 // Map object values into array for consistent operations across items
-const mapItemsIntoArrays = lib.partial(
-  lib.map,
-  lib.ifElse(lib.isObject, lib.entries, unlessIsArray)
+const mapItemsIntoArrays = partial(
+  map,
+  ifElse(isObject, entries, unlessIsArray)
 );
 
 //  filter logic
-const filterLogicOne = lib.partial(
-  lib.map,
-  lib.unless(
+const filterLogicOne = partial(
+  map,
+  unless(
     lenIs1,
-    lib.partial(
-      lib.filter,
-      lib.pipe(
-        lib.partial(
-          lib.flip(lib.complement(lib.includes)),
-          charsToRemove
-        )
-      )
-    )
+    partial(filter, pipe(partial(flip(complement(includes)), charsToRemove)))
   )
 );
 
 //  filter logic
-const filterLogicTwo = lib.partial(
-  lib.map,
-  lib.when(
+const filterLogicTwo = partial(
+  map,
+  when(
     isArrayOfPairs,
-    lib.partial(
-      lib.filter,
-      lib.pipe(
-        lib.partial(lib.nth, 1),
-        lib.partial(
-          lib.flip(lib.complement(lib.includes)),
-          charsToRemove
-        )
-      )
+    partial(
+      filter,
+      pipe(partial(nth, 1), partial(flip(complement(includes)), charsToRemove))
     )
   )
 );
 
 //  filter logic
-const filterLogicThree = lib.partial(
-  lib.map,
-  lib.ifElse(isArrayOfPairs, lib.fromEntries, valueOfLenOneArr)
+const filterLogicThree = partial(
+  map,
+  ifElse(isArrayOfPairs, fromEntries, valueOfLenOneArr)
 );
 
 // Filter compose function
-const customFilterOperation = lib.pipe(
+const customFilterOperation = pipe(
   mapItemsIntoArrays,
   filterLogicOne,
   filterLogicTwo,
