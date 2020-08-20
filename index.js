@@ -5,14 +5,41 @@ const { promisify } = require('util');
 
 const {
   zip,
+  map,
   omit,
   values,
   keys,
+  filter,
   fromEntries,
-  pipe,
   partial,
+  complement,
+  includes,
+  flip,
+  when,
+  pipe,
+  ifElse,
+  isObject,
 } = require('./utils/lib.js');
-const customFilterOperation = require('./app/appLogic');
+
+const charsToRemove = ['', 'N/A', '-'];
+
+// Filter unwanted characters from array
+const filterArray = partial(
+  filter,
+  partial(flip(complement(includes)), charsToRemove)
+);
+
+const whenArrayFilterArray = when(Array.isArray, filterArray);
+
+// Filter unwanted characters from object
+const filterObject = partial(flip(omit), charsToRemove);
+
+const customFilterOperation = partial(
+  map,
+  ifElse(isObject, filterObject, whenArrayFilterArray)
+);
+
+const zipIntoObject = pipe(zip, fromEntries);
 
 // Promisify Write to file method
 const writeFile = promisify(fs.writeFile);
@@ -32,8 +59,8 @@ const callback = response => {
   response.on('end', () => {
     const data = pipe(Buffer.concat, String, JSON.parse)(body);
 
-    //First filter
-    const initFilter = omit(data, ['', 'N/A', '-']);
+    //Initial filter
+    const initFilter = omit(data, charsToRemove);
 
     // Extract valid keys
     const validKeys = keys(initFilter);
@@ -45,7 +72,7 @@ const callback = response => {
     const finalFilter = customFilterOperation(unsortedValues);
 
     // Zip valid keys with filtered values and make into object
-    const filteredObject = pipe(zip, fromEntries)(validKeys, finalFilter);
+    const filteredObject = zipIntoObject(validKeys, finalFilter);
 
     // Write to file
     writeFile(
