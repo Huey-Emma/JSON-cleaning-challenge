@@ -75,10 +75,16 @@ const callback = response => {
     const filteredObject = zipIntoObject(validKeys, finalFilter);
 
     // Write to file
-    writeFile(
-      path.join(__dirname, './data.json'),
-      JSON.stringify(filteredObject)
-    ).catch(console.error);
+    (async function () {
+      try {
+        await writeFile(
+          path.join(__dirname, './data.json'),
+          JSON.stringify(filteredObject)
+        );
+      } catch (e) {
+        console.error(e);
+      }
+    })();
   });
 };
 
